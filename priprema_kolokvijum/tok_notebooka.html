@@ -146,18 +146,18 @@ tr.opt th,tr.opt td{border-top:2px dashed var(--pen)}
         <td colspan="2"><code>str.split</code><span class="arrow">→</span><code>str[:400]</code><span class="arrow">→</span><code>str.join(' ')</code></td></tr>
       <tr><th><span class="n">4</span>Tekst u vektore</th>
         <td class="vc"><code>spacy.load('en_core_web_md')</code><span class="arrow">→</span><code>def spacy_srediTekst</code><span class="arrow">→</span><code>for</code> petlja: <code>nlp_pipe(...).vector</code><span class="arrow">→</span><code>np.array</code></td>
-        <td class="vd"><code>SentenceTransformer('all-MiniLM-L12-v2')</code><span class="arrow">→</span><code>encode</code></td></tr>
+        <td class="vd"><code>SentenceTransformer('models/...', local_files_only=True)</code><span class="arrow">→</span><code>encode</code></td></tr>
       <tr><th><span class="n">5</span>Sličnost i udaljenost</th>
-        <td colspan="2"><code>cosine_similarity</code><span class="arrow">→</span><code>1 - similarity</code></td></tr>
+        <td colspan="2"><code>1 - cosine_similarity(embeddings)</code></td></tr>
       <tr><th><span class="n">6</span>Klasterovanje i dendrogram</th>
         <td colspan="2"><code>sch.linkage(method='ward')</code><span class="arrow">→</span><code>sch.dendrogram</code></td></tr>
       <tr><th><span class="n">7</span>Silueta za kandidate</th>
-        <td colspan="2"><code>sch.fcluster</code><span class="arrow">→</span><code>np.clip</code><span class="arrow">→</span><code>silhouette_score(metric='precomputed')</code></td></tr>
+        <td colspan="2"><code>np.clip</code><span class="arrow">→</span><code>for k</code>: <code>sch.fcluster</code><span class="arrow">→</span><code>silhouette_score(metric='precomputed')</code><span class="arrow">→</span><code>print</code></td></tr>
       <tr><th><span class="n">8</span>Izbor broja klastera<small>obrazloženje i veličine</small></th>
-        <td colspan="2"><code>sch.fcluster(t=k)</code><span class="arrow">→</span><code>value_counts</code></td></tr>
+        <td colspan="2"><code>data['clust'] = sch.fcluster(t=k)</code><span class="arrow">→</span><code>value_counts</code></td></tr>
       <tr><th><span class="n">9</span>Ključne reči<small>top 10 po klasteru</small></th>
-        <td class="vc"><code>TfidfVectorizer(tokenizer=spacy_srediTekst)</code><span class="arrow">→</span><code>mean(axis=0)</code></td>
-        <td class="vd"><code>TfidfVectorizer(stop_words='english')</code><span class="arrow">→</span><code>mean(axis=0)</code></td></tr>
+        <td class="vc"><code>TfidfVectorizer(tokenizer=spacy_srediTekst)</code><span class="arrow">→</span><code>mean(axis=0)</code><span class="arrow">→</span><code>nlargest(10)</code></td>
+        <td class="vd"><code>TfidfVectorizer(stop_words='english')</code><span class="arrow">→</span><code>mean(axis=0)</code><span class="arrow">→</span><code>nlargest(10)</code></td></tr>
       <tr><th><span class="n">10</span>Grafik ključnih reči</th>
         <td colspan="2"><code>plt.subplots</code><span class="arrow">→</span><code>barh</code><span class="arrow">→</span><code>load_cmap</code> <span class="tag">dato</span></td></tr>
       <tr><th><span class="n">11</span>Opis klastera<small>naslovi i tumačenje</small></th>
