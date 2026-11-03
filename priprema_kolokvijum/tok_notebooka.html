@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="sr-Latn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tok notebooka</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f3f7fc; --grid:#dfe8f3; --sheet:#ffffff; --ink:#17264a; --muted:#51607f; --line:#c3d0e2; --pen:#1f4fd1;
+  --a:#fff9d6; --a-edge:#e0c21f;
+  --b:#ffeef4; --b-edge:#ea6d9c;
+  --c:#e9faee; --c-edge:#35b163;
+  --d:#f0eeff; --d-edge:#7a6be6;
+  --mono:"JetBrains Mono",Consolas,"Cascadia Mono",monospace;
+  --sans:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);font:16px/1.45 var(--sans);background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px}
+.wrap{max-width:1500px;margin:0 auto;padding:40px 24px 64px}
+h1{margin:0;font-size:clamp(2.2rem,4vw,3.2rem);line-height:1.05;letter-spacing:-.02em}
+h2{margin:48px 0 4px;font-size:1.9rem;line-height:1.15;letter-spacing:-.015em}
+p{margin:8px 0 0;max-width:72ch}
+a{color:var(--pen);font-weight:700}
+.links{display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:14px}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:14px;font-size:.92rem}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend i{width:26px;height:14px;border:1px solid var(--line);background:var(--sheet)}
+.legend i.mark{background:linear-gradient(90deg,var(--a-edge),var(--b-edge),var(--c-edge),var(--d-edge));border:0}
+
+.scroll{overflow-x:auto;margin-top:14px;border:1px solid var(--ink);background:var(--sheet)}
+table{width:100%;border-collapse:collapse;min-width:820px}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}
+thead th{position:sticky;top:0;font-size:.98rem;border-bottom:4px solid}
+thead th.step-h{background:var(--sheet);border-bottom-color:var(--ink);width:210px}
+th.va,td.va{background:var(--a)} thead th.va{border-bottom-color:var(--a-edge)}
+th.vb,td.vb{background:var(--b)} thead th.vb{border-bottom-color:var(--b-edge)}
+th.vc,td.vc{background:var(--c)} thead th.vc{border-bottom-color:var(--c-edge)}
+th.vd,td.vd{background:var(--d)} thead th.vd{border-bottom-color:var(--d-edge)}
+td.ab{background:linear-gradient(90deg,var(--a),var(--b))}
+td.none{color:var(--muted);font-style:italic}
+tbody th{font-weight:700;background:var(--sheet)}
+tbody th .n{color:var(--pen);margin-right:6px}
+tbody th small{display:block;font-weight:400;color:var(--muted);font-size:.86rem}
+code{font:600 .9rem/1.6 var(--mono);white-space:nowrap}
+td code{display:inline-block;margin:1px 0}
+.arrow{color:var(--muted);margin:0 4px}
+tr.opt th,tr.opt td{border-top:2px dashed var(--pen)}
+.tag{font-size:.78rem;font-weight:700;color:#fff;background:var(--pen);padding:0 6px;margin-left:6px;white-space:nowrap}
+
+@media (max-width:760px){.wrap{padding:28px 16px 48px}}
+@media print{
+  @page{size:A4 landscape;margin:10mm}
+  body{background:#fff}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .scroll{overflow:visible} table{min-width:0}
+  h2{break-before:page;margin-top:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Tok notebooka</h1>
+  <p>Kostur zadatka od prvog do poslednjeg koraka. U ćelijama su samo klase i funkcije koje koristiš, a detalji su u druga dva dokumenta.</p>
+  <div class="legend">
+    <span><i></i>Belo: isto u svim varijantama</span>
+    <span><i class="mark"></i>Boja: razlikuje se</span>
+  </div>
+  <div class="links">
+    <a href="klasifikacija.html">Klasifikacija, detaljno</a>
+    <a href="klasterizacija.html">Klasterizacija, detaljno</a>
+  </div>
+
+  <h2>Klasifikacija</h2>
+  <p>Ulaz je tekst, a izlaz je klasa. Sve od transformacije do modela ide u jedan <code>Pipeline</code>.</p>
+  <div class="scroll">
+  <table>
+    <thead><tr>
+      <th class="step-h">Korak</th>
+      <th class="va">TF-IDF + logistička regresija</th>
+      <th class="vb">BoW + stablo odlučivanja</th>
+      <th class="vc">Vektori reči + SVM + SMOTE</th>
+    </tr></thead>
+    <tbody>
+      <tr><th><span class="n">1</span>Čitanje podataka</th>
+        <td colspan="3"><code>pd.read_csv</code><span class="arrow">→</span><code>info</code><span class="arrow">→</span><code>dropna</code></td></tr>
+      <tr><th><span class="n">2</span>Izlazna varijabla<small>npr. ocena u sentiment</small></th>
+        <td colspan="3"><code>def rating_to_sentiment</code><span class="arrow">→</span><code>apply</code><span class="arrow">→</span><code>value_counts</code></td></tr>
+      <tr><th><span class="n">3</span>Ostale kolone<small>uzeti ili ne, uz obrazloženje</small></th>
+        <td colspan="3"><code>sb.kdeplot</code> <span class="tag">dato</span><span class="arrow">→</span><code>nunique</code><span class="arrow">→</span><code>data_sub</code></td></tr>
+      <tr><th><span class="n">4</span>Pretprocesiranje<small>spaCy čišćenje</small></th>
+        <td colspan="2" class="ab"><code>spacy.load('en_core_web_sm')</code><span class="arrow">→</span><code>def spacy_srediTekst</code></td>
+        <td class="vc"><code>spacy.load('en_core_web_md')</code><span class="arrow">→</span><code>def spacy_srediTekst</code></td></tr>
+      <tr><th><span class="n">5</span>Podela podataka</th>
+        <td colspan="3"><code>pd.factorize</code><span class="arrow">→</span><code>train_test_split(stratify=...)</code></td></tr>
+      <tr><th><span class="n">6</span>Transformer<small>tekst u brojeve</small></th>
+        <td class="va"><code>TfidfVectorizer</code></td>
+        <td class="vb"><code>CountVectorizer</code></td>
+        <td class="vc"><code>def tekst_u_vektore</code><span class="arrow">→</span><code>FunctionTransformer</code></td></tr>
+      <tr><th><span class="n">7</span>Balansiranje klasa</th>
+        <td colspan="2" class="ab none">nema</td>
+        <td class="vc"><code>SMOTE</code></td></tr>
+      <tr><th><span class="n">8</span>Klasifikator</th>
+        <td class="va"><code>LogisticRegression</code></td>
+        <td class="vb"><code>DecisionTreeClassifier</code></td>
+        <td class="vc"><code>SVC</code></td></tr>
+      <tr><th><span class="n">9</span>Pipe</th>
+        <td colspan="2" class="ab"><code>sklearn.pipeline.Pipeline</code><br>vectorizer<span class="arrow">→</span>classifier</td>
+        <td class="vc"><code>imblearn.pipeline.Pipeline</code><br>vectorizer<span class="arrow">→</span>resampling<span class="arrow">→</span>classifier</td></tr>
+      <tr><th><span class="n">10</span>Prvi model</th>
+        <td colspan="3"><code>pipe.fit</code><span class="arrow">→</span><code>pipe.predict</code></td></tr>
+      <tr><th><span class="n">11</span>Evaluacija<small>po klasama i ukupno, uz tumačenje</small></th>
+        <td colspan="3"><code>ConfusionMatrixDisplay</code><span class="arrow">→</span><code>classification_report</code><span class="arrow">→</span><code>balanced_accuracy_score</code></td></tr>
+      <tr><th><span class="n">12</span>Podešavanje<small>5-fold, dva hiperparametra</small></th>
+        <td class="va"><code>GridSearchCV</code><br><code>max_features</code>, <code>C</code></td>
+        <td class="vb"><code>GridSearchCV</code><br><code>min_df</code>, <code>min_impurity_decrease</code></td>
+        <td class="vc"><code>GridSearchCV</code><br><code>C</code>, <code>kernel</code></td></tr>
+      <tr><th><span class="n">13</span>Podešeni model</th>
+        <td colspan="3"><code>best_params_</code><span class="arrow">→</span><code>pipe.set_params</code><span class="arrow">→</span><code>fit</code><span class="arrow">→</span><code>predict</code><span class="arrow">→</span><code>classification_report</code></td></tr>
+      <tr class="opt"><th><span class="n">+</span>Dummy model<small>opciono, donja granica</small></th>
+        <td colspan="3"><code>DummyClassifier(strategy='most_frequent')</code><span class="arrow">→</span><code>fit</code><span class="arrow">→</span><code>predict</code></td></tr>
+      <tr><th><span class="n">14</span>Poređenje modela<small>tabela i komentar</small></th>
+        <td colspan="3"><code>get_model_metrics</code> <span class="tag">dato</span><span class="arrow">→</span><code>pd.DataFrame</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Klasterizacija</h2>
+  <p>Ulaz je tekst, a izlaz su grupe sličnih tekstova. Nema podele na trening i test, niti <code>Pipeline</code>-a.</p>
+  <div class="scroll">
+  <table>
+    <thead><tr>
+      <th class="step-h">Korak</th>
+      <th class="vc">spaCy vektori + Ward</th>
+      <th class="vd">SBERT + Ward</th>
+    </tr></thead>
+    <tbody>
+      <tr><th><span class="n">1</span>Čitanje podataka</th>
+        <td colspan="2"><code>pd.read_csv</code><span class="arrow">→</span><code>info</code><span class="arrow">→</span><code>dropna</code><span class="arrow">→</span><code>duplicated</code></td></tr>
+      <tr><th><span class="n">2</span>Spajanje kolona<small>npr. naslov i tekst</small></th>
+        <td colspan="2"><code>data['webTitle'] + '. ' + data['bodyContent']</code></td></tr>
+      <tr><th><span class="n">3</span>Skraćivanje teksta<small>opciono, zbog brzine</small></th>
+        <td colspan="2"><code>str.split</code><span class="arrow">→</span><code>str[:400]</code><span class="arrow">→</span><code>str.join(' ')</code></td></tr>
+      <tr><th><span class="n">4</span>Tekst u vektore</th>
+        <td class="vc"><code>spacy.load('en_core_web_md')</code><span class="arrow">→</span><code>def spacy_srediTekst</code><span class="arrow">→</span><code>for</code> petlja: <code>nlp_pipe(...).vector</code><span class="arrow">→</span><code>np.array</code></td>
+        <td class="vd"><code>SentenceTransformer('all-MiniLM-L12-v2')</code><span class="arrow">→</span><code>encode</code></td></tr>
+      <tr><th><span class="n">5</span>Sličnost i udaljenost</th>
+        <td colspan="2"><code>cosine_similarity</code><span class="arrow">→</span><code>1 - similarity</code></td></tr>
+      <tr><th><span class="n">6</span>Klasterovanje i dendrogram</th>
+        <td colspan="2"><code>sch.linkage(method='ward')</code><span class="arrow">→</span><code>sch.dendrogram</code></td></tr>
+      <tr><th><span class="n">7</span>Silueta za kandidate</th>
+        <td colspan="2"><code>sch.fcluster</code><span class="arrow">→</span><code>np.clip</code><span class="arrow">→</span><code>silhouette_score(metric='precomputed')</code></td></tr>
+      <tr><th><span class="n">8</span>Izbor broja klastera<small>obrazloženje i veličine</small></th>
+        <td colspan="2"><code>sch.fcluster(t=k)</code><span class="arrow">→</span><code>value_counts</code></td></tr>
+      <tr><th><span class="n">9</span>Ključne reči<small>top 10 po klasteru</small></th>
+        <td class="vc"><code>TfidfVectorizer(tokenizer=spacy_srediTekst)</code><span class="arrow">→</span><code>mean(axis=0)</code></td>
+        <td class="vd"><code>TfidfVectorizer(stop_words='english')</code><span class="arrow">→</span><code>mean(axis=0)</code></td></tr>
+      <tr><th><span class="n">10</span>Grafik ključnih reči</th>
+        <td colspan="2"><code>plt.subplots</code><span class="arrow">→</span><code>barh</code><span class="arrow">→</span><code>load_cmap</code> <span class="tag">dato</span></td></tr>
+      <tr><th><span class="n">11</span>Opis klastera<small>naslovi i tumačenje</small></th>
+        <td colspan="2"><code>data.loc[data['clust'] == k]</code><span class="arrow">→</span><code>sample</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+</body>
+</html>

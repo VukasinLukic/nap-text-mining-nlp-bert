@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Agglomerative clustering, step by step</title>
+<style>
+:root{--bg:#f6f4ef;--fg:#1b2430;--mut:#5d6672;--card:#fff;--line:#d8d3c7;--grid:#e8e4da;--gray:#9a9a9a;--hi:#d33;--btn:#e9e5da;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171b22;--fg:#eceae4;--mut:#a4abb5;--card:#1f2530;--line:#3a4250;--grid:#2c3340;--gray:#8a8f98;--hi:#ff6b6b;--btn:#2c3340;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#171b22;--fg:#eceae4;--mut:#a4abb5;--card:#1f2530;--line:#3a4250;--grid:#2c3340;--gray:#8a8f98;--hi:#ff6b6b;--btn:#2c3340;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 Helvetica,Arial,sans-serif}
+main{max-width:1100px;margin:0 auto;padding:16px}
+h1{font:400 26px/1.2 Georgia,serif;margin:4px 0 12px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+button,select{font:inherit;padding:6px 14px;border:1px solid var(--line);border-radius:8px;background:var(--btn);color:var(--fg);cursor:pointer}
+button:disabled{opacity:.4;cursor:default}
+button.main{background:var(--fg);color:var(--bg)}
+label{color:var(--mut);font-size:14px}
+input[type=range]{flex:1;min-width:120px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px}
+.card h2{font:500 14px Helvetica,Arial,sans-serif;color:var(--mut);margin:4px 8px}
+svg{width:100%;height:auto;display:block}
+text{fill:var(--fg);font-family:Helvetica,Arial,sans-serif}
+.info{margin-top:12px;padding:12px 16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.info p{margin:2px 0}.mut{color:var(--mut);font-size:14px}
+</style></head><body><main>
+<h1>Agglomerative clustering, step by step</h1>
+<div class="bar">
+<button id="reset">Reset</button><button id="back">◀ Back</button><button id="next" class="main">Next ▶</button><button id="play">Play</button>
+<label>Linkage <select id="meth"><option value="single">single</option><option value="complete">complete</option><option value="average">average</option></select></label>
+<label>Speed <select id="spd"><option value="2500">slow</option><option value="1600" selected>normal</option><option value="800">fast</option></select></label>
+<input type="range" id="sl" min="0" value="0" aria-label="Step">
+</div>
+<div class="grid">
+<div class="card"><h2>Data points and current clusters</h2><svg id="sc" viewBox="0 0 480 330" role="img" aria-label="Scatter plot of the points"></svg></div>
+<div class="card"><h2>Dendrogram</h2><svg id="dg" viewBox="0 0 480 330" role="img" aria-label="Dendrogram built so far"></svg></div>
+</div>
+<div class="info"><p id="t1"></p><p id="t2" class="mut"></p></div>
+<p class="mut">Keyboard: ← and → step, space plays or pauses. Red dashed lines show which points define the distance between the merged clusters.</p>
+</main>
+<script>
+const L="ABCDEFGHIJ".split(""),P=[[1,1],[1.5,.5],[.8,.5],[4.3,4.1],[5.1,4.6],[3.1,5.5],[6.5,.9],[7.9,1.7],[7,2.3],[2.5,2.5]],n=P.length;
+const D=(a,b)=>Math.hypot(P[a][0]-P[b][0],P[a][1]-P[b][1]);
+const DESC={single:"the shortest distance between any two points of the two clusters",complete:"the longest distance between any two points of the two clusters",average:"the average of all point-to-point distances between the two clusters"};
+let method="single",k=0,H=[],order=[],timer=null;
+const $=id=>document.getElementById(id);
+function cd(a,b){const d=[];for(const i of a)for(const j of b)d.push(D(i,j));return method==="single"?Math.min(...d):method==="complete"?Math.max(...d):d.reduce((s,x)=>s+x,0)/d.length}
+function run(){let cl=P.map((_,i)=>({id:i,m:[i]})),id=n;H=[];
+while(cl.length>1){let b=null;
+for(let i=0;i<cl.length;i++)for(let j=i+1;j<cl.length;j++){const d=cd(cl[i].m,cl[j].m);if(!b||d<b.d)b={d,i,j}}
+const A=cl[b.i],B=cl[b.j];cl=cl.filter((_,x)=>x!==b.i&&x!==b.j);cl.push({id,m:A.m.concat(B.m)});
+H.push({a:A.id,b:B.id,ma:A.m,mb:B.m,d:b.d,nw:id,after:cl.map(c=>({id:c.id,m:c.m.slice()}))});id++}
+const ch={};H.forEach(h=>ch[h.nw]=[h.a,h.b]);const w=c=>c<n?[c]:w(ch[c][0]).concat(w(ch[c][1]));order=w(H[H.length-1].nw)}
+function pairs(h){const r=[];let b=null;for(const i of h.ma)for(const j of h.mb){const d=D(i,j);if(method==="average")r.push([i,j]);else if(!b||(method==="single"?d<b.d:d>b.d))b={d,p:[i,j]}}return method==="average"?r:[b.p]}
+function hull(p){p=p.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]);const c=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);const lo=[],up=[];for(const q of p){while(lo.length>1&&c(lo[lo.length-2],lo[lo.length-1],q)<=0)lo.pop();lo.push(q)}for(const q of p.slice().reverse()){while(up.length>1&&c(up[up.length-2],up[up.length-1],q)<=0)up.pop();up.push(q)}return lo.slice(0,-1).concat(up.slice(0,-1))}
+const col=id=>"hsl("+((id*47+10)%360)+",65%,50%)",sx=x=>20+x*52,sy=y=>315-y*45,nm=m=>"{"+m.slice().sort((a,b)=>a-b).map(i=>L[i]).join(",")+"}";
+function draw(){
+const cl=k?H[k-1].after:P.map((_,i)=>({id:i,m:[i]})),last=k?H[k-1]:null,own={};cl.forEach(c=>c.m.forEach(i=>own[i]=c.id));
+let s='<rect x="20" y="10" width="440" height="310" fill="none" stroke="var(--line)"/><g opacity=".3">';
+for(const c of cl){if(c.m.length<2)continue;const p=c.m.map(i=>[sx(P[i][0]),sy(P[i][1])]);
+if(p.length==2)s+=`<line x1="${p[0][0]}" y1="${p[0][1]}" x2="${p[1][0]}" y2="${p[1][1]}" stroke="${col(c.id)}" stroke-width="26" stroke-linecap="round"/>`;
+else s+=`<polygon points="${hull(p).map(q=>q.join(",")).join(" ")}" fill="${col(c.id)}" stroke="${col(c.id)}" stroke-width="26" stroke-linejoin="round"/>`}
+s+='</g>';
+if(last)for(const [i,j] of pairs(last))s+=`<line x1="${sx(P[i][0])}" y1="${sy(P[i][1])}" x2="${sx(P[j][0])}" y2="${sy(P[j][1])}" stroke="var(--hi)" stroke-width="${method==="average"?1:2}" stroke-dasharray="5 4"/>`;
+P.forEach((q,i)=>{const big=last&&own[i]===last.nw;s+=`<circle cx="${sx(q[0])}" cy="${sy(q[1])}" r="7" fill="${own[i]>=n?col(own[i]):"var(--gray)"}" stroke="${big?"var(--fg)":"var(--card)"}" stroke-width="${big?2.5:1.5}"/><text x="${sx(q[0])+10}" y="${sy(q[1])-9}" font-size="14" font-weight="700">${L[i]}</text>`});
+$("sc").innerHTML=s;
+const top=Math.ceil(H[n-2].d),yd=d=>300-d/top*265,xl=i=>40+i*(410/(n-1)),st=top>4?2:1;let g="";
+for(let v=0;v<=top;v+=st)g+=`<line x1="40" y1="${yd(v)}" x2="460" y2="${yd(v)}" stroke="var(--grid)"/><text x="34" y="${yd(v)+4}" font-size="12" text-anchor="end" style="fill:var(--mut)">${v}</text>`;
+const xp={},hh={};order.forEach((c,i)=>{xp[c]=xl(i);hh[c]=0;g+=`<text x="${xl(i)}" y="322" font-size="14" font-weight="700" text-anchor="middle">${L[c]}</text>`});
+for(let i=0;i<k;i++){const h=H[i],xa=xp[h.a],xb=xp[h.b],isL=i===k-1;
+g+=`<path d="M${xa} ${yd(hh[h.a])}V${yd(h.d)}H${xb}V${yd(hh[h.b])}" fill="none" stroke="${isL?"var(--hi)":"var(--fg)"}" stroke-width="${isL?3:1.8}"/>`;
+xp[h.nw]=(xa+xb)/2;hh[h.nw]=h.d;if(isL)g+=`<text x="${(xa+xb)/2}" y="${yd(h.d)-6}" font-size="12" text-anchor="middle" style="fill:var(--hi)">${h.d.toFixed(2)}</text>`}
+$("dg").innerHTML=g;
+$("t1").textContent=k===0?"Start: every point is its own cluster. Next, find the two closest clusters and merge them.":`Step ${k}: merge ${nm(last.ma)} + ${nm(last.mb)} at distance ${last.d.toFixed(2)}, which is ${DESC[method]}.`;
+$("t2").textContent=k===n-1?"Done: one cluster holds everything. Cutting the dendrogram at a chosen height gives a flat clustering.":`${n-k} cluster${n-k>1?"s":""} now: ${cl.map(c=>nm(c.m)).join("  ")}`;
+$("back").disabled=k===0;$("next").disabled=k===n-1;$("sl").value=k;$("play").textContent=timer?"Pause":"Play"}
+function stop(){if(timer){clearInterval(timer);timer=null}}
+function go(v){k=Math.max(0,Math.min(n-1,v));if(k===n-1)stop();draw()}
+function play(){if(timer){stop();draw();return}if(k===n-1)k=0;timer=setInterval(()=>go(k+1),+$("spd").value);go(k+1===n?0:k)}
+$("sl").max=n-1;
+$("next").onclick=()=>{stop();go(k+1)};$("back").onclick=()=>{stop();go(k-1)};$("reset").onclick=()=>{stop();go(0)};$("play").onclick=play;
+$("sl").oninput=e=>{stop();go(+e.target.value)};
+$("meth").onchange=e=>{stop();method=e.target.value;run();draw()};
+$("spd").onchange=()=>{if(timer){stop();play()}};
+document.addEventListener("keydown",e=>{if(e.target.tagName==="SELECT")return;if(e.key==="ArrowRight"){stop();go(k+1)}else if(e.key==="ArrowLeft"){stop();go(k-1)}else if(e.key===" "){e.preventDefault();play()}});
+run();draw();
+</script></body></html>
