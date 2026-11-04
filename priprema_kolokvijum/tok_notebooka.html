@@ -119,7 +119,7 @@ tr.opt th,tr.opt td{border-top:2px dashed var(--pen)}
         <td class="vb"><code>GridSearchCV</code><br><code>min_df</code>, <code>min_impurity_decrease</code></td>
         <td class="vc"><code>GridSearchCV</code><br><code>C</code>, <code>kernel</code></td></tr>
       <tr><th><span class="n">13</span>Podešeni model</th>
-        <td colspan="3"><code>best_params_</code><span class="arrow">→</span><code>pipe.set_params</code><span class="arrow">→</span><code>fit</code><span class="arrow">→</span><code>predict</code><span class="arrow">→</span><code>classification_report</code></td></tr>
+        <td colspan="3"><code>best_params_</code><span class="arrow">→</span><code>best_estimator_</code><span class="arrow">→</span><code>predict</code><span class="arrow">→</span><code>classification_report</code></td></tr>
       <tr class="opt"><th><span class="n">+</span>Dummy model<small>opciono, donja granica</small></th>
         <td colspan="3"><code>DummyClassifier(strategy='most_frequent')</code><span class="arrow">→</span><code>fit</code><span class="arrow">→</span><code>predict</code></td></tr>
       <tr><th><span class="n">14</span>Poređenje modela<small>tabela i komentar</small></th>
