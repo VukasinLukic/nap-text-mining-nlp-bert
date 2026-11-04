@@ -156,8 +156,8 @@ tr.opt th,tr.opt td{border-top:2px dashed var(--pen)}
       <tr><th><span class="n">8</span>Izbor broja klastera<small>obrazloženje i veličine</small></th>
         <td colspan="2"><code>data['clust'] = sch.fcluster(t=k)</code><span class="arrow">→</span><code>value_counts</code></td></tr>
       <tr><th><span class="n">9</span>Ključne reči<small>top 10 po klasteru</small></th>
-        <td class="vc"><code>TfidfVectorizer(tokenizer=spacy_srediTekst)</code><span class="arrow">→</span><code>mean(axis=0)</code><span class="arrow">→</span><code>nlargest(10)</code></td>
-        <td class="vd"><code>TfidfVectorizer(stop_words='english')</code><span class="arrow">→</span><code>mean(axis=0)</code><span class="arrow">→</span><code>nlargest(10)</code></td></tr>
+        <td class="vc"><code>TfidfVectorizer(tokenizer=spacy_srediTekst)</code><span class="arrow">→</span><code>mean(axis=0).A1</code><span class="arrow">→</span><code>nlargest(10).items()</code></td>
+        <td class="vd"><code>TfidfVectorizer(stop_words=custom_stop_words)</code><span class="arrow">→</span><code>mean(axis=0).A1</code><span class="arrow">→</span><code>nlargest(10).items()</code></td></tr>
       <tr><th><span class="n">10</span>Grafik ključnih reči</th>
         <td colspan="2"><code>plt.subplots</code><span class="arrow">→</span><code>barh</code><span class="arrow">→</span><code>load_cmap</code> <span class="tag">dato</span></td></tr>
       <tr><th><span class="n">11</span>Opis klastera<small>naslovi i tumačenje</small></th>
