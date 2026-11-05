@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hiperparametri za kolokvijum</title>
+<style>
+:root{
+  --paper:#f3f7fc; --grid:#dfe8f3; --sheet:#fff; --ink:#17264a; --muted:#51607f; --line:#c3d0e2;
+  --pen:#1f4fd1; --ok:#e9faee; --ok-edge:#35b163; --warn:#fff9d6; --warn-edge:#e0c21f; --more:#f0eeff; --more-edge:#7a6be6;
+  --codebg:#eef3fa;
+  --mono:"JetBrains Mono",Consolas,"Cascadia Mono",monospace;
+  --sans:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#11182a; --grid:#1a2338; --sheet:#18213a; --ink:#e3e9f6; --muted:#9fb0d0; --line:#2e3b5c;
+  --pen:#7ea2ff; --ok:#16301f; --ok-edge:#35b163; --warn:#332c0f; --warn-edge:#e0c21f; --more:#252146; --more-edge:#9a8cff; --codebg:#0f1527;
+}}
+:root[data-theme="dark"]{
+  --paper:#11182a; --grid:#1a2338; --sheet:#18213a; --ink:#e3e9f6; --muted:#9fb0d0; --line:#2e3b5c;
+  --pen:#7ea2ff; --ok:#16301f; --ok-edge:#35b163; --warn:#332c0f; --warn-edge:#e0c21f; --more:#252146; --more-edge:#9a8cff; --codebg:#0f1527;
+}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);font:16px/1.55 var(--sans);background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px}
+.wrap{max-width:1050px;margin:0 auto;padding:0 16px 60px}
+h1{font-size:clamp(2rem,4vw,3rem);line-height:1.1;margin:40px 0 10px;letter-spacing:-.02em}
+h2{font-size:1.6rem;margin:40px 0 10px;letter-spacing:-.01em}
+h3{font-size:1.2rem;margin:0 0 6px}
+p{margin:.4em 0}
+a{color:var(--pen)}
+nav{background:var(--sheet);border:1px solid var(--line);padding:10px 14px;margin:16px 0}
+nav a{display:inline-block;margin:2px 14px 2px 0}
+.card{background:var(--sheet);border:1px solid var(--line);padding:14px 16px;margin:12px 0}
+.ok{background:var(--ok);border-left:5px solid var(--ok-edge)}
+.warn{background:var(--warn);border-left:5px solid var(--warn-edge)}
+.more{background:var(--more);border-left:5px solid var(--more-edge)}
+.tag{display:inline-block;font-size:.8rem;font-weight:700;padding:1px 8px;margin-right:6px;color:#fff;background:var(--pen)}
+pre{margin:8px 0 0;padding:10px 12px;background:var(--codebg);overflow-x:auto;font:13px/1.5 var(--mono)}
+code{font:.9em var(--mono);background:var(--codebg);padding:0 3px;overflow-wrap:anywhere}
+pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:.94rem;margin-top:6px}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--paper)}
+.tw{overflow-x:auto}
+.big{font-size:1.15rem;font-weight:700}
+ul{padding-left:1.2em;margin:.3em 0}
+li{margin:.15em 0}
+.muted{color:var(--muted);font-size:.92rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Hiperparametri za kolokvijum</h1>
+<p>Koje hiperparametre podešavati u <code>GridSearchCV</code> da sve traje oko 10 minuta na slabijem računaru, šta napisati u komentaru „da imam više vremena“ i kako skratiti čekanje.</p>
+<p class="muted">Preporuke su usklađene sa mrežama iz materijala sa vežbi (<code>tm/</code>, <code>Primer_zadatka_klasifikacije</code>) i sa izvorima navedenim na dnu.</p>
+
+<nav>
+<a href="#budzet">1. Vremenski budžet</a>
+<a href="#ubrzanje">2. Kako ubrzati</a>
+<a href="#tabela">3. Brza tabela</a>
+<a href="#kombinacije">4. Predlozi po varijanti</a>
+<a href="#vise">5. „Da imam više vremena“</a>
+<a href="#greske">6. Česte greške</a>
+<a href="#izvori">Izvori</a>
+</nav>
+
+<h2 id="budzet">1. Vremenski budžet: prvo izmeri, pa računaj</h2>
+<div class="card">
+<p class="big">ukupno vreme ≈ broj kombinacija × broj foldova × vreme jednog fit-a</p>
+<p>Pre <code>GridSearchCV</code> izmeri jedan fit, jer prvi model ionako treniraš:</p>
+<pre><code>%time pipe.fit(X_train, y_train)     # npr. Wall time: 20 s</code></pre>
+<p>U kros-validaciji jedan fit radi na 80% trening skupa, pa je malo brži. Za 10 minuta (600 s):</p>
+<div class="tw"><table>
+<tr><th>Jedan fit traje</th><th>Fitova za 10 min</th><th>Kombinacija uz cv=5</th><th>Primer mreže</th></tr>
+<tr><td>~10 s</td><td>~60</td><td>9–12</td><td>3 × 3</td></tr>
+<tr><td>~20 s</td><td>~30</td><td>6</td><td>2 × 3</td></tr>
+<tr><td>~40 s</td><td>~15</td><td>3–4</td><td>2 × 2 ili 1 × 3</td></tr>
+<tr><td>~60 s</td><td>~10</td><td>2</td><td>preračunaj vektore (deo 2), pa probaj ponovo</td></tr>
+</table></div>
+<p>Zadaci obično traže <b>2 hiperparametra sa po 2–3 vrednosti</b> i najviše 9 kombinacija. Sa 6 kombinacija i <code>cv=5</code> dobijaš 30 fitova, što je u profesorkinom primeru trajalo nekoliko minuta.</p>
+</div>
+<div class="card warn"><b>„1 minut po foldu“</b> je skoro uvek spaCy, a ne klasifikator. Kad se vektorizer nalazi u Pipeline-u, spaCy ponovo čisti isti tekst u svakom foldu i za svaku kombinaciju. Logistička regresija ili linearni SVM nad 3–5 hiljada komentara traju par sekundi. Zato vidi deo 2.</div>
+
+<h2 id="ubrzanje">2. Kako ubrzati (najveći dobitak je prvi trik)</h2>
+
+<div class="card ok">
+<h3><span class="tag">×10</span>spaCy čišćenje uradi jednom, pre podele</h3>
+<p>Funkcija čišćenja ništa ne uči iz podataka (lematizacija, stop reči i interpunkcija rade isto za svaki komentar), pa ako je pokreneš nad celim skupom pre podele, <b>nema curenja podataka</b>. TF-IDF i BoW ostaju u Pipeline-u i svoj vokabular uče samo na treningu. Tako spaCy radi jednom umesto 30 puta.</p>
+<pre><code>data['review_clean'] = data['review'].apply(lambda t: ' '.join(spacy_srediTekst(t)))
+
+# u vektorizeru vise nema spaCy tokenizera, tekst je vec ociscen
+TfidfVectorizer(ngram_range=(1, 2))      # radi nad kolonom 'review_clean'</code></pre>
+<p class="muted">U svesci napiši jednu rečenicu: „Čišćenje je urađeno unapred jer ne zavisi od podataka; TF-IDF se i dalje uči samo na trening foldovima.“ Ako zadatak izričito traži <code>tokenizer=spacy_srediTekst</code> unutar vektorizera, uradi tako, ali smanji mrežu.</p>
+</div>
+
+<div class="card ok">
+<h3><span class="tag">×5</span>Vektore reči i SBERT izračunaj jednom („verzija 2“ iz Bloka 3)</h3>
+<p>Vektori reči i SBERT nemaju hiperparametre koje bi podešavao, a <code>doc.vector</code> ne uči ništa iz podataka. Zato ih izračunaš jednom, a u <code>GridSearchCV</code> ide samo SMOTE + klasifikator:</p>
+<pre><code>X_train_vec = vectorizer.transform(X_train)
+X_test_vec  = vectorizer.transform(X_test)
+
+fast_pipe = Pipeline([('resampling', SMOTE(random_state=1)),
+                      ('classifier', SVC(random_state=1))])
+grid_search = GridSearchCV(fast_pipe, param_grid, scoring='f1_macro', cv=5, verbose=1)
+grid_search.fit(X_train_vec, y_train)
+predictions_2 = grid_search.best_estimator_.predict(X_test_vec)</code></pre>
+</div>
+
+<div class="card ok">
+<h3><span class="tag">×2</span>Ostali trikovi</h3>
+<ul>
+<li><b><code>spacy.load('en_core_web_md', disable=['parser', 'ner'])</code></b>: parser i NER ti ne trebaju za čišćenje, a uzimaju dosta vremena.</li>
+<li><b><code>nlp_pipe.pipe(tekstovi, batch_size=256)</code></b> je brže od pozivanja <code>nlp_pipe(t)</code> u petlji, jer obrađuje tekstove u grupama.</li>
+<li><b><code>n_jobs=-1</code></b> u <code>GridSearchCV</code> koristi sva jezgra procesora. Uključi ga samo kad spaCy nije u Pipeline-u (posle trika ×10), jer se inače spaCy model kopira u svaki proces i sve postaje sporije.</li>
+<li><b><code>Pipeline(..., memory='cache_dir')</code></b> pamti već fitovan vektorizer. Ako se u mreži menja samo <code>C</code>, TF-IDF se ne računa ponovo. Na kraju obriši folder.</li>
+<li><b><code>verbose=1</code></b> ispisuje broj fitova („Fitting 5 folds for each of 6 candidates“), pa odmah vidiš da li je mreža prevelika.</li>
+<li>Prvo pokreni mrežu sa <code>cv=2</code> i jednom vrednošću, da proveriš da imena parametara rade. Tek onda pusti pravu mrežu.</li>
+</ul>
+</div>
+
+<h2 id="tabela">3. Brza tabela: šta je najvažnije po komponenti</h2>
+<div class="tw"><table>
+<tr><th>Komponenta</th><th>Najvažniji (za kolokvijum)</th><th>Vrednosti (2–3)</th><th>Zašto</th></tr>
+<tr><td><b>TfidfVectorizer / CountVectorizer</b></td><td><code>min_df</code></td><td><code>[0.005, 0.01, 0.025]</code> ili <code>[1, 3, 5]</code></td><td>Izbacuje retke reči (šum, greške u kucanju) i smanjuje vokabular. Ovo koriste sve sveske sa vežbi.</td></tr>
+<tr><td></td><td><code>ngram_range</code> (alternativa)</td><td><code>[(1,1), (1,2)]</code></td><td>Bigrami hvataju „not good“ i „no response“. Često daju najveći skok, ali povećavaju vokabular.</td></tr>
+<tr><td></td><td><code>max_features</code> (alternativa)</td><td><code>[500, 1000, 1500]</code></td><td>Zadržava N najčešćih reči. Ovo koristi profesorkino rešenje.</td></tr>
+<tr><td><b>LogisticRegression</b></td><td><code>C</code></td><td><code>[0.1, 1, 10]</code></td><td>Jačina regularizacije: manji C znači jednostavniji model. Vrednosti se biraju na log skali.</td></tr>
+<tr><td><b>SVC</b></td><td><code>C</code> + <code>kernel</code></td><td><code>[0.1, 1, 10]</code> × <code>['linear', 'rbf']</code></td><td>Za TF-IDF je <code>linear</code> skoro uvek dovoljan. Za guste vektore reči <code>rbf</code> često pobedi.</td></tr>
+<tr><td><b>DecisionTreeClassifier</b></td><td><code>max_depth</code> ili <code>min_impurity_decrease</code></td><td><code>[10, 20, None]</code> / <code>[0.001, 0.005, 0.01]</code></td><td>Bez ograničenja stablo nauči trening napamet (overfit). <code>min_impurity_decrease</code> se koristi u svesci sa BoW-om.</td></tr>
+<tr><td><b>SMOTE</b></td><td><code>k_neighbors</code></td><td><code>[3, 5]</code></td><td>Broj suseda između kojih pravi nove tačke. Mora biti manji od broja primera najređe klase.</td></tr>
+<tr><td><b>class_weight</b> (LR, SVC, stablo)</td><td><code>[None, 'balanced']</code></td><td>2</td><td>Alternativa SMOTE-u: greška na retkoj klasi više košta. Brzo je i često podigne macro F1.</td></tr>
+</table></div>
+
+<h2 id="kombinacije">4. Predlozi po varijanti zadatka</h2>
+<p>Pravilo iz zadataka: <b>jedan parametar transformacije + jedan parametar klasifikatora</b>, sa 2–3 vrednosti, a C na log skali. Ako transformacija nema parametre (vektori reči, SBERT), uzmi oba parametra iz klasifikatora.</p>
+
+<div class="card">
+<h3>TF-IDF + logistička regresija (Blok 2)</h3>
+<pre><code>param_grid = {
+    'vectorizer__min_df': [0.005, 0.01],      # ili 'vectorizer__ngram_range': [(1,1), (1,2)]
+    'classifier__C': [0.1, 1, 10]
+}                                             # 6 kombinacija x 5 = 30 fitova</code></pre>
+<p>Uz čišćenje unapred (deo 2) ovo traje 1–2 minuta. Ako ostane vremena, dodaj <code>'classifier__class_weight': [None, 'balanced']</code> (12 kombinacija).</p>
+</div>
+
+<div class="card">
+<h3>BoW + stablo odlučivanja (Blok 1)</h3>
+<pre><code>param_grid = {
+    'vectorizer__min_df': [0.005, 0.01, 0.025],
+    'classifier__max_depth': [10, 30, None]   # ili min_impurity_decrease: [0.001, 0.005, 0.01]
+}                                             # 9 kombinacija</code></pre>
+<p>Stablo nad retkom BoW matricom je brzo, ali bez ograničenja dubine pravi overfit. <code>max_depth</code> se najlakše objašnjava u komentaru.</p>
+</div>
+
+<div class="card">
+<h3>Vektori reči + SVM + SMOTE (Blok 3)</h3>
+<pre><code>param_grid = {
+    'classifier__C': [0.1, 1, 10],
+    'classifier__kernel': ['linear', 'rbf']
+}                                             # 6 kombinacija, vektori izracunati unapred</code></pre>
+<p>Napiši da vektori reči nemaju hiperparametre transformacije, pa su oba parametra iz klasifikatora. Ako ostane vremena, probaj <code>'resampling__k_neighbors': [3, 5]</code>.</p>
+</div>
+
+<div class="card">
+<h3>TF-IDF + SVM + SMOTE (PDF „tfidf_svm“)</h3>
+<pre><code>param_grid = {
+    'data_transform__text__min_df': [0.005, 0.01],   # sa ColumnTransformer-om: korak__deo__parametar
+    'classifier__C': [0.1, 1, 10]
+}</code></pre>
+<p>Ne dodaji <code>kernel='rbf'</code> na TF-IDF: sporiji je, a retko je bolji od linearnog. SMOTE nad retkom TF-IDF matricom radi, ali pravi „veštačke“ komentare koji ne liče na prave. Zato je dobro u komentaru pomenuti <code>class_weight='balanced'</code> kao alternativu.</p>
+</div>
+
+<div class="card">
+<h3>SBERT + LR / SVM</h3>
+<pre><code>X_train_emb = sbert.encode(X_train.to_numpy())   # jednom
+param_grid = {'classifier__C': [0.1, 1, 10],
+              'classifier__class_weight': [None, 'balanced']}</code></pre>
+<p>SBERT ne čisti tekst spaCy-jem, jer mu trebaju cele rečenice. Kodiranje je najsporiji deo, pa ga radiš samo jednom.</p>
+</div>
+
+<h2 id="vise">5. Komentar „da imam više vremena“ (prepiši u markdown)</h2>
+<div class="card more">
+<p>Ovaj deo zadatak skoro uvek traži. Napiši šta bi podešavao, sa konkretnim opsezima, i zašto. Za veliku mrežu pomeni <code>RandomizedSearchCV</code> (npr. <code>n_iter=20</code>), jer bi puna mreža imala stotine kombinacija.</p>
+<div class="tw"><table>
+<tr><th>Komponenta</th><th>Hiperparametar</th><th>Opseg</th><th>Šta kontroliše</th></tr>
+<tr><td rowspan="5">TF-IDF / BoW</td><td><code>ngram_range</code></td><td>(1,1), (1,2), (1,3)</td><td>da li se gledaju i parovi i trojke reči</td></tr>
+<tr><td><code>min_df</code></td><td>1, 2, 5, 0.005, 0.01, 0.025, 0.05</td><td>izbacivanje retkih reči</td></tr>
+<tr><td><code>max_df</code></td><td>0.5, 0.75, 0.9, 1.0</td><td>izbacivanje reči koje su u skoro svakom komentaru</td></tr>
+<tr><td><code>max_features</code></td><td>500, 1000, 2000, 5000, None</td><td>veličina vokabulara</td></tr>
+<tr><td><code>sublinear_tf</code></td><td>True, False</td><td>1 + log(tf) umesto broja pojavljivanja (samo TF-IDF)</td></tr>
+<tr><td rowspan="3">LogisticRegression</td><td><code>C</code></td><td>np.logspace(-3, 3, 7)</td><td>jačina regularizacije</td></tr>
+<tr><td><code>class_weight</code></td><td>None, 'balanced'</td><td>veća kazna za greške na retkim klasama</td></tr>
+<tr><td><code>penalty</code></td><td>'l1', 'l2' (uz solver='liblinear' ili 'saga')</td><td>l1 izbacuje nebitne reči (koeficijent 0)</td></tr>
+<tr><td rowspan="4">SVC</td><td><code>C</code></td><td>0.01, 0.1, 1, 10, 100</td><td>kazna za pogrešno klasifikovane tačke / širina margine</td></tr>
+<tr><td><code>kernel</code></td><td>'linear', 'rbf'</td><td>oblik granice između klasa</td></tr>
+<tr><td><code>gamma</code></td><td>'scale', 0.001, 0.01, 0.1, 1</td><td>samo za rbf: koliko daleko „doseže“ jedna tačka</td></tr>
+<tr><td><code>class_weight</code></td><td>None, 'balanced'</td><td>neizbalansiranost bez novih primera</td></tr>
+<tr><td rowspan="5">DecisionTree</td><td><code>max_depth</code></td><td>5, 10, 20, 50, None</td><td>dubina stabla / overfit</td></tr>
+<tr><td><code>min_samples_leaf</code></td><td>1, 5, 10, 20</td><td>najmanji broj komentara u listu</td></tr>
+<tr><td><code>min_impurity_decrease</code></td><td>0.0, 0.001, 0.005, 0.01</td><td>grananje samo kad se nečistoća dovoljno smanji</td></tr>
+<tr><td><code>criterion</code></td><td>'gini', 'entropy'</td><td>mera nečistoće</td></tr>
+<tr><td><code>ccp_alpha</code></td><td>0.0, 0.001, 0.01</td><td>naknadno potkresivanje stabla</td></tr>
+<tr><td>SMOTE</td><td><code>k_neighbors</code></td><td>3, 5, 7</td><td>broj suseda za pravljenje novih tačaka</td></tr>
+</table></div>
+<p><b>Primer rečenice:</b> „Da nismo vremenski ograničeni, podešavali bismo i ngram_range ((1,1), (1,2)), max_df (0.75, 1.0) i sublinear_tf za TF-IDF, a za SVC C na skali 0.01–100, kernel (linear, rbf), gamma za rbf i class_weight (None, balanced). Zbog veličine mreže koristili bismo RandomizedSearchCV sa 20–30 nasumičnih kombinacija.“</p>
+</div>
+
+<h2 id="greske">6. Česte greške</h2>
+<div class="card warn">
+<ul>
+<li><b>Ime parametra:</b> <code>korak__parametar</code> sa dve donje crte. Uz ColumnTransformer dobija još jedan nivo: <code>data_transform__text__min_df</code>. Greška <code>Invalid parameter</code> znači da ime nije dobro. Sva imena vidiš sa <code>pipe.get_params().keys()</code>.</li>
+<li><b><code>scoring='f1_macro'</code></b>: bez toga GridSearchCV bira po accuracy, a to kod neizbalansiranih klasa nagrađuje model koji pogađa samo najčešću klasu.</li>
+<li><b>GridSearchCV samo na treningu:</b> <code>fit(X_train, y_train)</code>, a test skup koristiš samo za konačnu ocenu.</li>
+<li><b><code>best_estimator_</code> je već istreniran</b> na celom treningu (<code>refit=True</code>), pa ga ne treniraš ponovo.</li>
+<li><b>Uporedi <code>best_score_</code> i test macro F1.</b> Ako su slični, model nije overfitovan. Ako podešavanje ne popravi model, napiši to i ne izmišljaj poboljšanje.</li>
+<li><b>SMOTE ide kroz <code>imblearn.pipeline.Pipeline</code></b>, da bi se primenio samo na trening foldovima.</li>
+<li><b><code>gamma</code> uz <code>kernel='linear'</code></b> se ignoriše, pa takva mreža samo troši vreme. Ako baš hoćeš oba, koristi listu rečnika: <code>[{'kernel':['linear'], 'C':[...]}, {'kernel':['rbf'], 'C':[...], 'gamma':[...]}]</code>.</li>
+</ul>
+</div>
+
+<h2 id="izvori">Izvori</h2>
+<div class="card">
+<ul>
+<li><a href="https://scikit-learn.org/stable/auto_examples/model_selection/plot_grid_search_text_feature_extraction.html">scikit-learn: Sample pipeline for text feature extraction and evaluation</a>: mreža <code>max_df</code>, <code>min_df</code>, <code>ngram_range</code> zajedno sa jačinom regularizacije; najbolji parametri zavise jedni od drugih.</li>
+<li><a href="https://scikit-learn.org/stable/auto_examples/compose/plot_compare_reduction.html">scikit-learn: Pipeline <code>memory</code> keširanje u GridSearchCV</a>: transformer se ne fituje ponovo kad se menja samo C.</li>
+<li><a href="https://apxml.com/courses/nlp-fundamentals/chapter-3-nlp-text-classification/hyperparameter-tuning-text-models">apxml: Hyperparameter Tuning for Text Classifiers</a>: <code>min_df</code>, <code>max_df</code>, <code>ngram_range</code> + C kao osnovna mreža.</li>
+<li><a href="https://apapiu.github.io/2016-08-04-tf_idf/">Tf-Idf Ridge Model Selection using Pipelines</a>: tipična mala mreža <code>min_df [1,3,10]</code>, <code>ngram_range [(1,1),(1,2)]</code>.</li>
+<li><a href="https://arxiv.org/pdf/1809.08651">Hate speech on Twitter, n-gram i TF-IDF (arXiv)</a>: najbolji n-gram opseg zavisi od klasifikatora, pa ih podešavaj zajedno.</li>
+<li><a href="https://ideas.repec.org/a/tec/techni/v17y2023i1p427-434.html">SVM kerneli za sentiment (Technium)</a>: linearni kernel najbolji na tekstu, traži samo C; rbf traži C i gamma.</li>
+<li><a href="https://codemia.io/knowledge-hub/path/fine-tuning_parameters_in_logistic_regression">Fine-tuning logistic regression</a>: C na log skali (0.01–10), <code>class_weight='balanced'</code>, izbor solvera.</li>
+<li><a href="https://svgoudar.github.io/Learn-ML-and-NLP/machine_learning/supervised_learning/Decision_Tree/DTC/03_part.html">Decision tree hyperparameters</a>: <code>max_depth</code>, <code>min_samples_leaf</code>, <code>ccp_alpha</code>.</li>
+<li><a href="https://www.kdnuggets.com/3-spacy-tricks-for-efficient-text-processing-entity-recognition">KDnuggets: spaCy tricks</a>: isključivanje parser/NER komponenti skraćuje obradu.</li>
+<li><a href="https://campus.datacamp.com/courses/advanced-nlp-with-spacy/processing-pipelines?ex=13">DataCamp: spaCy processing pipelines</a>: <code>nlp.pipe</code> u grupama umesto poziva u petlji.</li>
+<li><a href="https://pychemauth.readthedocs.io/en/latest/jupyter/api/imbalanced_classes.html">Dealing with class imbalance</a>: SMOTE u imblearn Pipeline-u, <code>class_weight</code> kao alternativa.</li>
+<li><a href="https://ar5iv.labs.arxiv.org/html/2402.03819">arXiv 2402.03819</a>: podešavanje <code>k_neighbors</code> kod SMOTE-a.</li>
+</ul>
+<p class="muted">Na Reddit-u nisam našao konkretne niti o ovoj temi, pa su preporuke iz dokumentacije, tutorijala i radova, usklađene sa sveskama sa vežbi. Vremena u delu 1 su procena: izmeri jedan fit na svom računaru.</p>
+</div>
+
+</div>
+</body>
+</html>
